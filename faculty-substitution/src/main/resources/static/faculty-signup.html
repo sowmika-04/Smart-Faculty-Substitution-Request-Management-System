@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Faculty Signup</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #b2dfdb, #e0f7fa);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .signup-box {
+      background: white;
+      padding: 20px 20px;
+      border-radius: 10px;
+      width: 280px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      animation: slideIn 0.5s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      text-align: center;
+      color: #00796b;
+      margin-bottom: 15px;
+      font-size: 17px;
+    }
+
+    input {
+      width: 100%;
+      margin: 6px 0;
+      padding: 7px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 12px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus {
+      border-color: #00796b;
+      box-shadow: 0 0 3px rgba(0, 121, 107, 0.25);
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 8px;
+      background: #00796b;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-top: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #004d40;
+      transform: translateY(-1px);
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .login-link a {
+      color: #00796b;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    #messageBox {
+      text-align: center;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="signup-box">
+  <h2>Faculty Signup</h2>
+  <input id="facultyId" placeholder="Faculty ID">
+  <input id="name" placeholder="Name">
+  <input id="email" placeholder="Email">
+  <input id="subject" placeholder="Subject">
+  <input id="password" placeholder="Password" type="password">
+  <input id="confirmPassword" placeholder="Confirm Password" type="password">
+  <button onclick="signup()">Sign Up</button>
+  <p id="messageBox"></p>
+  <div class="login-link">
+    Already registered? <a href="faculty-loginin.html">Login</a>
+  </div>
+</div>
+
+<script>
+  async function signup() {
+    const facultyId = document.getElementById("facultyId").value;
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const subject = document.getElementById("subject").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const messageBox = document.getElementById("messageBox");
+
+    if (password !== confirmPassword) {
+      messageBox.textContent = "Passwords do not match";
+      messageBox.style.color = "red";
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8080/faculty/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ facultyId, name, email, subject, password })
+      });
+
+      const msg = await res.text();
+      messageBox.textContent = msg;
+      messageBox.style.color = res.ok ? "green" : "red";
+
+      if (res.ok) {
+        setTimeout(() => window.location.href = "faculty-login.html", 2000);
+      }
+
+    } catch (e) {
+      messageBox.textContent = "Error: " + e.message;
+      messageBox.style.color = "red";
+    }
+  }
+</script>
+
+</body>
+</html>

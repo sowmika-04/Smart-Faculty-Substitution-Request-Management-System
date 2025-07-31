@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>TimeSwap Admin Dashboard</title>
+    <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background-color: #f9fafb;
+          margin: 0;
+        }
+
+        header {
+          background-color: #ffffff;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 15px 30px;
+          border-bottom: 1px solid #e0e0e0;
+        }
+
+        header h2 {
+          margin: 0;
+          color: #2575fc;
+        }
+
+        nav {
+          display: flex;
+          gap: 20px;
+          font-weight: bold;
+        }
+
+        nav a {
+          text-decoration: none;
+          color: #444;
+        }
+
+        .logout-btn {
+          background-color: #f44336;
+          border: none;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+
+        .dashboard-container {
+          max-width: 1200px;
+          margin: 30px auto;
+          background: white;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        h3 {
+          margin-top: 0;
+        }
+
+        .faculty-card {
+          margin-top: 20px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 20px;
+        }
+
+        .faculty-card h4 {
+          margin: 0;
+          color: #333;
+        }
+
+        .faculty-card small {
+          color: #888;
+        }
+
+        table {
+          width: 100%;
+          margin-top: 10px;
+          border-collapse: collapse;
+        }
+
+        th, td {
+          border: 1px solid #ccc;
+          text-align: center;
+          padding: 10px;
+        }
+
+        th {
+          background-color: #f1f5f9;
+        }
+
+        .add-btn {
+          margin-top: 20px;
+          float: right;
+          background-color: #2575fc;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+
+        .add-btn:hover {
+          background-color: #1d5ed9;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2>📘 TimeSwap</h2>
+    <nav>
+        <a href="#">Faculty Schedules</a>
+        <a href="#">Substitution Requests</a>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </nav>
+</header>
+
+<div class="dashboard-container">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+        <h3>All Faculty Schedules</h3>
+        <button class="add-btn" onclick="window.location.href='add-schedule.html'">+ Add Schedule</button>
+    </div>
+    <p>View and manage the weekly timetables for all faculty members.</p>
+
+    <div id="facultySchedules">
+        <!-- Faculty schedules will be inserted here by JS -->
+    </div>
+</div>
+
+<script>
+    async function fetchSchedules() {
+      const container = document.getElementById("facultySchedules");
+      container.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch("http://localhost:8080/timetable/all");
+        const data = await res.json();
+        container.innerHTML = "";
+
+        const facultyMap = {};
+
+        data.forEach(entry => {
+          const facultyId = entry.facultyUser.facultyId;
+
+          if (!facultyMap[facultyId]) {
+            facultyMap[facultyId] = {
+              name: entry.facultyUser.name,
+              email: entry.facultyUser.email,
+              timetable: {}
+            };
+          }
+
+          const day = entry.day;
+          const period = entry.period - 1; // 0-indexed
+          const subject = entry.subject || "-";
+          const className = entry.className || "-";
+          const displayText = subject + "<br><small>" + className + "</small>";
+
+          if (!facultyMap[facultyId].timetable[day]) {
+            facultyMap[facultyId].timetable[day] = Array(8).fill("-");
+          }
+
+          facultyMap[facultyId].timetable[day][period] = displayText;
+        });
+
+        Object.values(facultyMap).forEach(faculty => {
+          let html = `<div class='faculty-card'>
+            <h4>${faculty.name}</h4>
+            <small>${faculty.email}</small>
+            <table>
+              <thead>
+                <tr><th>Day</th>`;
+          for (let i = 1; i <= 8; i++) html += `<th>Period ${i}</th>`;
+          html += `</tr></thead><tbody>`;
+
+          const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+          days.forEach(day => {
+            const row = faculty.timetable[day] || Array(8).fill("-");
+            html += `<tr><td>${day}</td>` + row.map(p => `<td>${p}</td>`).join("") + `</tr>`;
+          });
+
+          html += `</tbody></table></div>`;
+          container.innerHTML += html;
+        });
+
+      } catch (err) {
+        container.innerHTML = "Failed to load schedules.";
+        console.error("Fetch Error:", err);
+      }
+    }
+
+    function logout() {
+      window.location.href = "login.html";
+    }
+
+    window.onload = fetchSchedules;
+</script>
+
+</body>
+</html>

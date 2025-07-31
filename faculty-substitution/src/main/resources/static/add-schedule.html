@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Add Timetable - TimeSwap</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f1f5f9;
+          padding: 40px;
+        }
+
+        h2 {
+          color: #2c3e50;
+        }
+
+        .form-group {
+          margin-bottom: 15px;
+        }
+
+        label {
+          font-weight: bold;
+          display: block;
+          margin-bottom: 5px;
+        }
+
+        input {
+          padding: 8px;
+          width: 300px;
+          border-radius: 4px;
+          border: 1px solid #ccc;
+        }
+
+        table {
+          border-collapse: collapse;
+          margin-top: 20px;
+          width: 100%;
+        }
+
+        th, td {
+          border: 1px solid #999;
+          padding: 6px;
+          text-align: center;
+        }
+
+        input.period-input {
+          width: 90px;
+          padding: 4px;
+          font-size: 12px;
+        }
+
+        button {
+          margin-top: 20px;
+          padding: 10px 25px;
+          font-weight: bold;
+          background-color: #4a90e2;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+
+        #message {
+          margin-top: 15px;
+          font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Add Faculty Timetable</h2>
+
+<div class="form-group">
+    <label for="facultyId">Faculty ID</label>
+    <input type="text" id="facultyId" required />
+</div>
+
+<div class="form-group">
+    <label for="facultyName">Faculty Name</label>
+    <input type="text" id="facultyName" required />
+</div>
+
+<table id="timetableTable">
+    <thead>
+    <tr>
+        <th>Day</th>
+        <th>Period 1</th>
+        <th>Period 2</th>
+        <th>Period 3</th>
+        <th>Period 4</th>
+        <th>Period 5</th>
+        <th>Period 6</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Rows will be inserted by JS -->
+    </tbody>
+</table>
+
+<button onclick="submitTimetable()">Save Timetable</button>
+
+<div id="message"></div>
+
+<script>
+    const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    const periodsPerDay = 6;
+    const tbody = document.querySelector("#timetableTable tbody");
+
+    weekdays.forEach(day => {
+      const row = document.createElement("tr");
+      const dayCell = document.createElement("td");
+      dayCell.textContent = day;
+      row.appendChild(dayCell);
+
+      for (let i = 1; i <= periodsPerDay; i++) {
+        const cell = document.createElement("td");
+
+        const subjectInput = document.createElement("input");
+        subjectInput.type = "text";
+        subjectInput.placeholder = "Subject";
+        subjectInput.className = "period-input";
+
+        const classInput = document.createElement("input");
+        classInput.type = "text";
+        classInput.placeholder = "Class";
+        classInput.className = "period-input";
+
+        cell.appendChild(subjectInput);
+        cell.appendChild(document.createElement("br"));
+        cell.appendChild(classInput);
+        row.appendChild(cell);
+      }
+
+      tbody.appendChild(row);
+    });
+
+    async function submitTimetable() {
+      const facultyId = document.getElementById("facultyId").value.trim();
+      const facultyName = document.getElementById("facultyName").value.trim();
+      const message = document.getElementById("message");
+
+      if (!facultyId || !facultyName) {
+        message.textContent = "Please fill in Faculty ID and Name.";
+        message.style.color = "red";
+        return;
+      }
+
+      const timetable = {};
+      [...tbody.rows].forEach(row => {
+        const day = row.cells[0].textContent;
+        timetable[day] = [];
+
+        for (let i = 1; i <= periodsPerDay; i++) {
+          const inputs = row.cells[i].querySelectorAll("input");
+          const subject = inputs[0].value.trim();
+          const className = inputs[1].value.trim();
+          timetable[day].push([subject, className]);
+        }
+      });
+
+      const payload = {
+        facultyId,
+        facultyName,
+        facultyEmail: "",  // Not needed anymore, handled by server
+        timetable
+      };
+
+      try {
+        const res = await fetch("http://localhost:8080/timetable/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        message.textContent = text;
+        message.style.color = res.ok ? "green" : "red";
+      } catch (err) {
+        message.textContent = "Failed to submit: " + err.message;
+        message.style.color = "red";
+      }
+    }
+</script>
+
+</body>
+</html>

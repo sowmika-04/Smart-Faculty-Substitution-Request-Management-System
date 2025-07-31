@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Faculty</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          padding: 20px;
+          background-color: #f2f2f2;
+        }
+
+        form {
+          background: #fff;
+          padding: 20px;
+          max-width: 400px;
+          margin: auto;
+          border-radius: 8px;
+          box-shadow: 0 0 10px #ccc;
+        }
+
+        input, button {
+          width: 100%;
+          padding: 10px;
+          margin: 10px 0;
+        }
+
+        button {
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          cursor: pointer;
+        }
+
+        .message {
+          text-align: center;
+          font-weight: bold;
+          margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<h2 align="center">Add Faculty</h2>
+
+<form id="facultyForm">
+    <input type="text" id="facultyId" placeholder="Faculty ID" required />
+    <input type="text" id="name" placeholder="Faculty Name" required />
+    <input type="text" id="department" placeholder="Department (e.g., CSE)" required />
+    <button type="submit">Add Faculty</button>
+    <div class="message" id="msg"></div>
+</form>
+
+<script>
+    document.getElementById("facultyForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const faculty = {
+        facultyId: document.getElementById("facultyId").value,
+        name: document.getElementById("name").value,
+        department: document.getElementById("department").value
+      };
+
+      fetch("http://localhost:8080/faculty", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(faculty)
+      })
+      .then(res => {
+        if (res.ok) {
+          document.getElementById("msg").textContent = "Faculty added successfully!";
+          document.getElementById("facultyForm").reset();
+        } else {
+          document.getElementById("msg").textContent = "Error adding faculty.";
+        }
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        document.getElementById("msg").textContent = "Server error.";
+      });
+    });
+</script>
+
+</body>
+</html>

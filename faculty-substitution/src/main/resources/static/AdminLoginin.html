@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>TimeSwap Login</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f9fafb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          margin: 0;
+        }
+
+        .login-container {
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+          width: 400px;
+          text-align: center;
+        }
+
+        .login-container h1 {
+          color: #4a90e2;
+          margin-bottom: 5px;
+        }
+
+        .login-container p {
+          font-size: 14px;
+          color: #555;
+          margin-bottom: 20px;
+        }
+
+        .role-selector {
+          display: flex;
+          justify-content: space-between;
+          margin: 20px 0;
+        }
+
+        .role-selector button {
+          width: 48%;
+          padding: 10px;
+          font-weight: bold;
+          border: 2px solid #4a90e2;
+          background: none;
+          cursor: pointer;
+          border-radius: 6px;
+          color: #4a90e2;
+          transition: background 0.3s ease;
+        }
+
+        .role-selector button.active {
+          background: #4a90e2;
+          color: white;
+        }
+
+        input {
+          width: 100%;
+          padding: 10px;
+          margin: 10px 0;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          box-sizing: border-box;
+        }
+
+        button.login-btn {
+          background: #4a90e2;
+          color: white;
+          font-weight: bold;
+          border: none;
+          padding: 12px;
+          border-radius: 8px;
+          width: 100%;
+          cursor: pointer;
+          margin-top: 10px;
+        }
+
+        .footer {
+          margin-top: 15px;
+          font-size: 14px;
+        }
+
+        .footer a {
+          color: #4a90e2;
+          text-decoration: none;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        #message {
+          margin-top: 12px;
+          font-weight: bold;
+          color: red;
+          min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h1>TimeSwap</h1>
+    <p>Effortless timetable management and substitutions.</p>
+
+    <div class="role-selector">
+        <button id="adminBtn" class="active" onclick="setRole('admin')">Admin</button>
+        <button id="facultyBtn" onclick="setRole('faculty')">Faculty</button>
+    </div>
+
+    <input type="text" id="loginId" placeholder="Username or Email" aria-label="Username or Email" />
+    <input type="password" id="password" placeholder="Password" aria-label="Password" />
+    <button class="login-btn" onclick="login()">→ Login</button>
+
+    <div id="message"></div>
+
+    <div class="footer">
+        Don't have an account? <a onclick="goToSignup()">Sign Up</a>
+    </div>
+</div>
+
+<script>
+    let currentRole = "admin";
+
+    function setRole(role) {
+      currentRole = role;
+      document.getElementById("adminBtn").classList.toggle("active", role === "admin");
+      document.getElementById("facultyBtn").classList.toggle("active", role === "faculty");
+      document.getElementById("message").textContent = "";
+    }
+
+    async function login() {
+      const loginId = document.getElementById("loginId").value.trim();
+      const password = document.getElementById("password").value;
+      const message = document.getElementById("message");
+
+      if (!loginId || !password) {
+        message.style.color = "red";
+        message.textContent = "Please enter both username/email and password.";
+        return;
+      }
+
+      const endpoint = currentRole === "admin" ? "/admin/login" : "/faculty/login";
+
+      try {
+        const res = await fetch(`http://localhost:8080${endpoint}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username: loginId,
+            password
+          })
+        });
+
+        const msg = await res.text();
+        message.style.color = res.ok ? "green" : "red";
+        message.textContent = msg;
+
+        if (res.ok) {
+          setTimeout(() => {
+            window.location.href = currentRole === "admin" ? "admin-dashboard.html" : "faculty-dashboard.html";
+          }, 1000);
+        }
+      } catch (err) {
+        message.textContent = "Error: " + err.message;
+        message.style.color = "red";
+      }
+    }
+
+    function goToSignup() {
+      window.location.href = currentRole === "admin" ? "AdminSignup.html" : "faculty-signup.html";
+    }
+</script>
+
+</body>
+</html>

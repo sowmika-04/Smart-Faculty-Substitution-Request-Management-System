@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Signup</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6c63ff, #3f3d56);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            width: 360px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #6c63ff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background-color: #574fd3;
+        }
+
+        #messageBox {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #6c63ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Admin Signup</h2>
+    <input id="username" placeholder="Username" />
+    <input id="email" placeholder="Email" type="email" />
+    <input id="mobile" placeholder="Mobile Number" />
+    <input id="password" placeholder="Password" type="password" />
+    <input id="confirmPassword" placeholder="Confirm Password" type="password" />
+    <button onclick="signup()">Sign Up</button>
+    <p id="messageBox"></p>
+
+    <div class="login-link">
+        Already have an account? <a href="AdminLoginin.html">Login</a>
+    </div>
+</div>
+
+<script>
+    async function signup() {
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const mobile = document.getElementById("mobile").value;
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        const messageBox = document.getElementById("messageBox");
+
+        if (password !== confirmPassword) {
+            messageBox.style.color = "red";
+            messageBox.textContent = "Passwords do not match";
+            return;
+        }
+
+        try {
+            const res = await fetch("http://localhost:8080/admin/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, email, mobile, password })
+            });
+
+            const msg = await res.text();
+            messageBox.textContent = msg;
+            messageBox.style.color = res.ok ? "green" : "red";
+
+            if (res.ok) {
+                setTimeout(() => {
+                    window.location.href = "AdminLoginin.html";
+                }, 2000); // Redirect after 2 seconds
+            }
+        } catch (e) {
+            messageBox.style.color = "red";
+            messageBox.textContent = "Error: " + e.message;
+        }
+    }
+</script>
+
+</body>
+</html>
